@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.adc.idea.sys.mapper.SysGroupMapper">
+
+	<resultMap id="BaseResultMap" type="com.adc.idea.sys.entity.SysGroup">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="parent_id" property="parentId" jdbcType="INTEGER" />
+		<result column="parent_ids" property="parentIds" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="INTEGER" />
+		<result column="usable" property="usable" jdbcType="CHAR" />
+		<result column="deleted" property="deleted" jdbcType="CHAR" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, parent_id, parent_ids, name, sort, usable, deleted,
+		remark
+	</sql>
+
+	<sql id="Parent_Column_List">
+		c.id,
+		c.name,
+		c.sort,
+		c.usable,
+		c.parent_id AS "parent.id",
+		c.parent_ids AS parentIds,
+		p.name AS "parent.name"
+	</sql>
+
+	<sql id="Parent_Joins">
+		LEFT JOIN sys_group p ON p.id = c.parent_id
+	</sql>
+
+	<select id="selectGroupsByRoleId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_group sg
+		WHERE sg.deleted = '0'
+		AND sg.usable = '1'
+		AND sg.id IN
+		(SELECT gr.group_id FROM sys_group_role gr WHERE gr.role_id = #{roleId})
+		ORDER BY sg.sort
+	</select>
+
+	<select id="selectGroupParentByPrimaryKey" parameterType="java.lang.Integer"
+		resultType="SysGroup">
+		SELECT
+		<include refid="Parent_Column_List" />
+		FROM sys_group c
+		<include refid="Parent_Joins" />
+		WHERE c.id = #{id,jdbcType=INTEGER}
+	</select>
+
+	<update id="changeDeletedValue" parameterType="SysGroup">
+		UPDATE sys_group
+		SET deleted = #{deleted}
+		WHERE id = #{id}
+	</update>
+
+	<select id="selectList" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_group sg
+		WHERE sg.usable = '1'
+		AND sg.deleted = '0'
+	</select>
+
+	<select id="selectPage" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_group sg
+		WHERE sg.id != 1
+		AND sg.deleted = '0'
+		<if test="name != null and '' != name">
+			AND sg.name LIKE '%${name}%'
+		</if>
+		<if test="parentId != null and '' != parentId">
+			AND sg.parent_id = #{parentId,jdbcType=VARCHAR}
+		</if>
+		<if test="usable != null and '' != usable">
+			AND sg.usable = #{usable, jdbcType=CHAR}
+		</if>
+		ORDER BY sg.sort
+	</select>
+
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_group
+		WHERE id = #{id,jdbcType=INTEGER}
+	</select>
+
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		sys_group
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+
+	<insert id="insertSelective" parameterType="SysGroup">
+		insert into sys_group
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="parentId != null">
+				parent_id,
+			</if>
+			<if test="parentIds != null">
+				parent_ids,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="sort != null">
+				sort,
+			</if>
+			<if test="usable != null">
+				usable,
+			</if>
+			<if test="deleted != null">
+				deleted,
+			</if>
+			<if test="remark != null">
+				remark,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="parentId != null">
+				#{parentId,jdbcType=INTEGER},
+			</if>
+			<if test="parentIds != null">
+				#{parentIds,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="sort != null">
+				#{sort,jdbcType=INTEGER},
+			</if>
+			<if test="usable != null">
+				#{usable,jdbcType=CHAR},
+			</if>
+			<if test="deleted != null">
+				#{deleted,jdbcType=CHAR},
+			</if>
+			<if test="remark != null">
+				#{remark,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="updateByPrimaryKeySelective" parameterType="SysGroup">
+		update sys_group
+		<set>
+			<if test="parentId != null">
+				parent_id = #{parentId,jdbcType=INTEGER},
+			</if>
+			<if test="parentIds != null">
+				parent_ids = #{parentIds,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="sort != null">
+				sort = #{sort,jdbcType=INTEGER},
+			</if>
+			<if test="usable != null">
+				usable = #{usable,jdbcType=CHAR},
+			</if>
+			<if test="deleted != null">
+				deleted = #{deleted,jdbcType=CHAR},
+			</if>
+			<if test="remark != null">
+				remark = #{remark,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+</mapper>

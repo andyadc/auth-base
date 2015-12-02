@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <jmxConfigurator />
+	
+	<!-- 日志级别 -->
+	<!-- TRACE < DEBUG < INFO < WARN < ERROR-->
+	
+	<property name="logback.logs.path" value="D:\\logs\\demo\\log"></property>
+	
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="rollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logback.logs.path}/ALL-STDOUT.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logback.logs.path}/STDOUT.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="businessLogFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 按每小时滚动文件，如果一个小时内达到10M也会滚动文件, 滚动文件将会压缩成zip格式 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logback.logs.path}/page-%d{yyyy-MM-dd_HH}.%i.zip</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <!-- 独立的pattern -->
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS},%msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <appender name="errorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    	<file>${logback.logs.path}/ERROR.log</file>
+    	<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+    		<fileNamePattern>${logback.logs.path}/error-%d{yyyy-MM-dd}.log</fileNamePattern>
+    	</rollingPolicy>
+    	 <encoder>  
+        	<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %thread %X{invokeNo} %logger{40} %msg%n</pattern>  
+    	</encoder>  
+    	 <filter class="ch.qos.logback.classic.filter.LevelFilter"><!-- 只打印错误日志 -->  
+	        <level>ERROR</level>  
+	        <onMatch>ACCEPT</onMatch>  
+	        <onMismatch>DENY</onMismatch>  
+	    </filter>  
+    </appender>
+    
+    <appender name="infoLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    	<file>${logback.logs.path}/INFO.log</file>
+    	<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+    		<fileNamePattern>${logback.logs.path}/info-%d{yyyy-MM-dd}.log</fileNamePattern>
+    	</rollingPolicy>
+    	 <encoder>  
+        	<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %thread %X{invokeNo} %logger{40} %msg%n</pattern>  
+    	</encoder>  
+    	 <filter class="ch.qos.logback.classic.filter.LevelFilter"><!-- 只打info日志 -->  
+	        <level>INFO</level>  
+	        <onMatch>ACCEPT</onMatch>  
+	        <onMismatch>DENY</onMismatch>  
+	    </filter>  
+    </appender>
+    
+    <!-- 访问日志 appender  -->
+    <appender name="ACCESS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 按天回滚 daily -->
+            <fileNamePattern>${logback.logs.path}/idea-access-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 日志最大的历史 60天 -->
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <!-- 登录日志 appender  -->
+    <appender name="LOGIN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 按天回滚 daily -->
+            <fileNamePattern>${logback.logs.path}/idea-login-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 日志最大的历史 60天 -->
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- project default level -->
+    <logger name="com.adc.idea" level="DEBUG" />
+    <logger name="org.mybatis.spring.SqlSessionFactoryBean" level="DEBUG" />
+
+    <!--log4jdbc -->
+    <!-- <logger name="jdbc.sqltiming" level="INFO"/> -->
+
+    <root level="INFO">
+        <appender-ref ref="console" />
+        <appender-ref ref="rollingFile" />
+        <appender-ref ref="errorLog" />
+        <appender-ref ref="infoLog" />
+    </root>
+    
+    <logger name="access-log" level="info">
+    	<appender-ref ref="ACCESS" />
+    </logger>
+    
+    <logger name="login-log" level="info">
+    	<appender-ref ref="LOGIN" />
+    </logger>
+    
+</configuration>

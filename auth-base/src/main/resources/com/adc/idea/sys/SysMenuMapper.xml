@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.adc.idea.sys.mapper.SysMenuMapper">
+	<resultMap id="BaseResultMap" type="com.adc.idea.sys.entity.SysMenu">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="parent_id" property="parentId" jdbcType="INTEGER" />
+		<result column="parent_ids" property="parentIds" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="sort" property="sort" jdbcType="INTEGER" />
+		<result column="href" property="href" jdbcType="VARCHAR" />
+		<result column="target" property="target" jdbcType="VARCHAR" />
+		<result column="icon" property="icon" jdbcType="VARCHAR" />
+		<result column="permission" property="permission" jdbcType="VARCHAR" />
+		<result column="is_show" property="isShow" jdbcType="CHAR" />
+		<result column="type" property="type" jdbcType="CHAR" />
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		id, parent_id, parent_ids, name, sort, href, target, icon, permission, is_show, type
+	</sql>
+	
+	<sql id="parentColumns">
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids AS parentIds,
+		a.name,
+		a.href,
+		a.target,
+		a.icon,
+		a.sort,
+		a.is_show AS isShow,
+		a.permission,
+		a.type,
+		p.name AS "parent.name"
+	</sql>
+	
+	<sql id="User_Menu">
+		id, parent_id, parent_ids, name, sort, href, target, icon, permission, is_show, type
+	</sql>
+	
+	<sql id="parentJoins">
+		LEFT JOIN sys_menu p ON p.id = a.parent_id
+	</sql>
+	
+	<select id="selectMenuIdByRoleId" parameterType="java.lang.Integer" resultType="java.util.Map">
+		SELECT menu_id FROM sys_role_menu WHERE role_id = #{roleId}
+	</select>
+	
+	<delete id="deleteMenuIdByRoleId" parameterType="java.lang.Integer">
+		DELETE FROM sys_role_menu WHERE role_id = #{roleId}
+	</delete>
+	
+	<insert id="insertRoleMenu">
+		INSERT INTO sys_role_menu (role_id, menu_id)
+		<foreach collection="menuList" item="menu" separator=" union all ">
+			SELECT #{id}, #{menu.id} FROM DUAL
+		</foreach>
+	</insert>
+	
+	<select id="selectPermissionsByUserId" parameterType="java.lang.Integer" resultType="java.util.Map">
+		SELECT DISTINCT
+			permission
+		FROM
+			sys_menu m
+		WHERE
+			m.id IN (
+				SELECT
+					rm.menu_id
+				FROM
+					sys_role_menu rm
+				WHERE
+					rm.role_id IN (
+						SELECT
+							ur.role_id
+						FROM
+							sys_user_role ur
+						WHERE
+							ur.user_id = #{userId,jdbcType=INTEGER}
+					)
+			)
+		AND m.is_show = 1
+		AND m.permission IS NOT NULL AND m.permission != ''
+	</select>
+	
+	<select id="selectByUserId" resultMap="BaseResultMap">
+		SELECT DISTINCT
+		<include refid="User_Menu" />
+		FROM
+			sys_menu m
+		WHERE
+			m.id IN (
+				SELECT
+					rm.menu_id
+				FROM
+					sys_role_menu rm
+				WHERE
+					rm.role_id IN (
+						SELECT
+							ur.role_id
+						FROM
+							sys_user_role ur
+						WHERE
+							ur.user_id = #{userId,jdbcType=INTEGER}
+					)
+			)
+		AND m.is_show = 1
+		ORDER BY sort
+	</select>
+	
+	<select id="selectAll" resultMap="BaseResultMap">
+		SELECT DISTINCT
+		<include refid="User_Menu" />
+		FROM
+			sys_menu
+		ORDER BY sort
+	</select>
+	
+	<!-- 获取导航菜单,不包括页面按钮 -->
+	<select id="selectNavigate" resultMap="BaseResultMap">
+		SELECT DISTINCT
+		<include refid="User_Menu" />
+		FROM
+			sys_menu m
+		WHERE 
+			m.id IN (
+				SELECT
+					rm.menu_id
+				FROM
+					sys_role_menu rm
+				WHERE
+					rm.role_id IN (
+						SELECT
+							ur.role_id
+						FROM
+							sys_user_role ur
+						WHERE
+							ur.user_id = #{userId,jdbcType=INTEGER}
+					)
+			)
+		AND m.type = '1'
+		ORDER BY m.sort
+	</select>
+	
+	<update id="updateParentIds">
+		UPDATE sys_menu 
+		SET 
+			parent_id = #{parentId}, 
+			parent_ids = #{parentIds}
+		WHERE 
+			id = #{id}
+	</update>
+	
+	<update id="updateSort">
+		UPDATE sys_menu 
+		SET
+			sort = #{sort}
+		WHERE 
+			id = #{id}
+	</update>
+	
+	<select id="selectMenuParentByPrimaryKey" parameterType="java.lang.Integer" resultType="SysMenu">
+		SELECT
+		<include refid="parentColumns"/>
+		FROM sys_menu a
+		<include refid="parentJoins"/>
+		WHERE a.id = #{id,jdbcType=INTEGER}
+	</select>
+	
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_menu
+		WHERE id = #{id,jdbcType=INTEGER}
+	</select>
+	
+	<delete id="deleteByParentId" parameterType="java.lang.Integer">
+		DELETE FROM sys_menu
+		WHERE parent_id = #{id,jdbcType=INTEGER}
+	</delete>
+	
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		DELETE FROM sys_menu
+		WHERE id = #{id,jdbcType=INTEGER}
+	</delete>
+	
+	<insert id="insertSelective" parameterType="SysMenu" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO sys_menu
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="parentId != null">
+				parent_id,
+			</if>
+			<if test="parentIds != null">
+				parent_ids,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="sort != null">
+				sort,
+			</if>
+			<if test="href != null">
+				href,
+			</if>
+			<if test="target != null">
+				target,
+			</if>
+			<if test="icon != null">
+				icon,
+			</if>
+			<if test="permission != null">
+				permission,
+			</if>
+			<if test="isShow != null">
+				is_show,
+			</if>
+			<if test="type != null">
+				type,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="parentId != null">
+				#{parentId,jdbcType=INTEGER},
+			</if>
+			<if test="parentIds != null">
+				#{parentIds,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="sort != null">
+				#{sort,jdbcType=INTEGER},
+			</if>
+			<if test="href != null">
+				#{href,jdbcType=VARCHAR},
+			</if>
+			<if test="target != null">
+				#{target,jdbcType=VARCHAR},
+			</if>
+			<if test="icon != null">
+				#{icon,jdbcType=VARCHAR},
+			</if>
+			<if test="permission != null">
+				#{permission,jdbcType=VARCHAR},
+			</if>
+			<if test="isShow != null">
+				#{isShow,jdbcType=CHAR},
+			</if>
+			<if test="type != null">
+				#{type,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="SysMenu">
+		UPDATE sys_menu
+		<set>
+			<if test="parentId != null">
+				parent_id = #{parentId,jdbcType=INTEGER},
+			</if>
+			<if test="parentIds != null">
+				parent_ids = #{parentIds,jdbcType=VARCHAR},
+			</if>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="sort != null">
+				sort = #{sort,jdbcType=INTEGER},
+			</if>
+			<if test="href != null">
+				href = #{href,jdbcType=VARCHAR},
+			</if>
+			<if test="target != null">
+				target = #{target,jdbcType=VARCHAR},
+			</if>
+			<if test="icon != null">
+				icon = #{icon,jdbcType=VARCHAR},
+			</if>
+			<if test="permission != null">
+				permission = #{permission,jdbcType=VARCHAR},
+			</if>
+			<if test="isShow != null">
+				is_show = #{isShow,jdbcType=CHAR},
+			</if>
+			<if test="type != null">
+				type = #{type,jdbcType=CHAR},
+			</if>
+		</set>
+		WHERE id = #{id,jdbcType=INTEGER}
+	</update>
+	
+</mapper>

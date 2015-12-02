@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.adc.idea.sys.mapper.SysRoleMapper">
+	<resultMap id="BaseResultMap" type="com.adc.idea.sys.entity.SysRole">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="role" property="role" jdbcType="VARCHAR" />
+		<result column="usable" property="usable" jdbcType="CHAR" />
+		<result column="deleted" property="deleted" jdbcType="CHAR" />
+		<result column="remarks" property="remarks" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		id, name, role, usable, deleted, remarks
+	</sql>
+	
+	<select id="selectUserIdsByRoleId" parameterType="java.lang.Integer" resultType="map">
+		SELECT DISTINCT
+		CAST(user_id AS CHAR) AS userId
+		FROM sys_user_role
+		WHERE role_id = #{roleId}
+	</select>
+	
+	<select id="selectCountByName" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM sys_role WHERE name = #{name}
+	</select>
+	
+	<select id="selectCountByRole" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM sys_role WHERE role = #{role}
+	</select>
+	
+	<select id="selectAll" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_role
+		WHERE usable = '1' AND deleted = '0'
+	</select>
+	
+	<select id="selectRoleListByUserId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+		SELECT DISTINCT
+			sr.id id,
+			sr.name name,
+			sr.role role
+		FROM
+			sys_user_role sur
+		JOIN sys_role sr ON sur.role_id = sr.id
+		WHERE
+			sur.user_id = #{userId,jdbcType=INTEGER}
+		AND sr.usable = '1' AND sr.deleted = '0'
+	</select>
+	
+	<select id="selectNamesByUserId" parameterType="java.lang.Integer" resultType="map">
+		SELECT DISTINCT
+			sr.name name
+		FROM
+			sys_user_role sur
+		JOIN sys_role sr ON sur.role_id = sr.id
+		WHERE
+			sur.user_id = #{userId,jdbcType=INTEGER}
+		AND sr.usable = '1' AND sr.deleted = '0'
+	</select>
+	
+	<select id="selectRolesByUserId" parameterType="java.lang.Integer" resultType="map">
+		SELECT DISTINCT
+			sr.role role
+		FROM
+			sys_user_role sur
+		JOIN sys_role sr ON sur.role_id = sr.id
+		WHERE
+			sur.user_id = #{userId,jdbcType=INTEGER}
+		AND sr.usable = '1' AND sr.deleted = '0'
+	</select>
+	
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM sys_role
+		WHERE id = #{id,jdbcType=INTEGER}
+	</select>
+	
+	<delete id="deleteUserRoleByRoleId" parameterType="java.lang.Integer">
+		DELETE FROM sys_user_role WHERE role_id = #{roleId}
+	</delete>
+	
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		DELETE FROM sys_role
+		WHERE id = #{id,jdbcType=INTEGER}
+	</delete>
+	
+	<insert id="insertSelective" parameterType="SysRole" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO sys_role
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="role != null">
+				role,
+			</if>
+			<if test="usable != null">
+				usable,
+			</if>
+			<if test="remarks != null">
+				remarks,
+			</if>
+			<if test="deleted != null">
+				deleted,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="role != null">
+				#{role,jdbcType=VARCHAR},
+			</if>
+			<if test="usable != null">
+				#{usable,jdbcType=CHAR},
+			</if>
+			<if test="remarks != null">
+				#{remarks,jdbcType=VARCHAR},
+			</if>
+			<if test="deleted != null">
+				#{deleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="SysRole">
+		UPDATE sys_role
+		<set>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="role != null">
+				role = #{role,jdbcType=VARCHAR},
+			</if>
+			<if test="usable != null">
+				usable = #{usable,jdbcType=CHAR},
+			</if>
+			<if test="remarks != null">
+				remarks = #{remarks,jdbcType=VARCHAR},
+			</if>
+			<if test="deleted != null">
+				deleted = #{deleted,jdbcType=CHAR},
+			</if>
+		</set>
+		WHERE id = #{id,jdbcType=INTEGER}
+	</update>
+	
+</mapper>

@@ -1,0 +1,4 @@
+<link href="${staticPath }/plugins/bootstrap2/css-Cerulean/bootstrap.min.css" type="text/css" rel="stylesheet">
+<link href="${staticPath }/plugins/bootstrap2/css/bootstrap-responsive.min.css" type="text/css" rel="stylesheet">
+<link href="${staticPath }/plugins/Font-Awesome-3.2.1/css/font-awesome.min.css" type="text/css" rel="stylesheet">
+<script type="text/javascript" charset="utf-8" src="${staticPath }/plugins/bootstrap2/js/bootstrap.min.js"></script>

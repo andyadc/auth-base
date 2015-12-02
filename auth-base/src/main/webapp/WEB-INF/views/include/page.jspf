@@ -1,0 +1,74 @@
+<%@ page contentType="text/html;charset=UTF-8" %>
+<c:if test="${not empty page.list }">
+
+	<div class="pagination">
+			
+			<c:if test="${page.totalPage eq 1 }">
+				<ul>
+					<li class="disabled"><a href="javascript:">&#171; 上一页</a></li>
+					<li class="active"><a href="javascript:">1</a></li>
+					<li class="disabled"><a href="javascript:">下一页 &#187;</a></li>
+					<li class="disabled controls">
+						<a>当前 ${page.pageNo } / ${page.totalPage } 页，共 ${page.totalRecord } 条</a>
+					</li>
+				</ul>
+			</c:if>
+			
+			<c:if test="${page.totalPage ne 1 }">
+				
+				<ul>
+					<c:if test="${page.pageNo eq 1 }">
+						<li class="disabled"><a href="javascript:">&#171; 上一页</a></li>
+					</c:if>
+					<c:if test="${page.pageNo ne 1 }">
+						<li><a href="javascript:" onclick="jump(${page.pageNo - 1 }, 10)" >&#171; 上一页</a></li>
+					</c:if>
+					
+					<c:forEach items="${page.navigatePageNums }" var="nav">
+						<li <c:if test="${page.pageNo eq nav }">class="active"</c:if> ><a href="javascript:" <c:if test="${page.pageNo ne nav }">onclick="jump(${nav }, 10)"</c:if> >${nav }</a></li>
+					</c:forEach>
+					
+					<c:if test="${page.pageNo eq page.totalPage }">
+						<li class="disabled"><a href="javascript:">下一页 &#187;</a></li>
+					</c:if>
+					<c:if test="${page.pageNo ne page.totalPage }">
+						<li><a href="javascript:" onclick="jump(${page.pageNo + 1 }, 10)" >下一页 &#187;</a></li>
+					</c:if>
+					
+					<li class="disabled controls">
+						<a>当前 <input type="text" class="input-medium" style="width: 50px;" value="${page.pageNo }" onchange="go(this.value)" onkeyup="value=value.replace(/[^0-9]/g,'')" /> / ${page.totalPage } 页，共 ${page.totalRecord } 条</a>
+					</li>
+				</ul>
+				
+			</c:if>
+			
+			<div style="clear:both;"></div>
+		</div>
+		
+		<script type="text/javascript">
+			function jump(p, s){
+				if(p) $("#pageNo").val(p);
+				if(s) $("#pageSize").val(s);
+				var formId = '${searchForm}';
+				$("#"+formId).attr("action","${adminCtx}/sys/user/list");
+				$("#"+formId).submit();
+		    	return false;
+			}
+			
+			function go(v){
+				var e = '${page.totalPage}'
+				e = parseInt(e);
+				var n = parseInt(v);
+				if(isNaN(n)) n = 1
+				if(n < 1 ) n = 1
+				if(n > e) n =1
+				
+				$("#pageNo").val(n);
+				var formId = '${searchForm}';
+				$("#"+formId).attr("action","${adminCtx}/sys/user/list");
+				$("#"+formId).submit();
+		    	return false;
+			}
+		</script>
+		
+</c:if>
