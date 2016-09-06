@@ -1,2 +1,2 @@
 # auth-base
-a basic authority cookie
+a basic authority cookie!
